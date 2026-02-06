@@ -1,6 +1,6 @@
 "use client";
 
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { Send, User, Bot, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useEffect, useRef } from 'react';
 
 export default function CoachPage() {
-    const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+    const { messages, input = '', handleInputChange, handleSubmit, isLoading } = useChat() as any;
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Auto-scroll to bottom
@@ -49,7 +49,7 @@ export default function CoachPage() {
                     </div>
                 )}
 
-                {messages.map(m => (
+                {messages.map((m: any) => (
                     <div key={m.id} className={cn("flex gap-4", m.role === 'user' ? "flex-row-reverse" : "")}>
                         <div className={cn(
                             "h-8 w-8 rounded-full flex items-center justify-center shrink-0",

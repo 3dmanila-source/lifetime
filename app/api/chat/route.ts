@@ -42,7 +42,7 @@ export async function POST(req: Request) {
             system: systemPrompt,
             messages,
         });
-        return result.toDataStreamResponse();
+        return result.toTextStreamResponse();
     } catch (error) {
         console.error("Gemini API Error:", error);
         // MOCK FALLBACK (If API Key is missing or quota exceeded)
