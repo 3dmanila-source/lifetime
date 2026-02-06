@@ -1,5 +1,8 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+"use client";
+
+import Link from "next/link"
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton"
+import { PhoneAuthForm } from "@/components/auth/PhoneAuthForm"
 
 export default function LoginPage() {
     return (
@@ -8,13 +11,24 @@ export default function LoginPage() {
                 <h1 className="text-2xl font-bold mb-4">Welcome Back</h1>
                 <p className="text-gray-500 mb-8">Continue your journey.</p>
 
-                <Button asChild className="w-full h-12 text-lg mb-4">
-                    <Link href="/dashboard">Log In (Demo)</Link>
-                </Button>
+                <div className="space-y-6">
+                    <GoogleAuthButton text="Sign in with Google" />
 
-                <p className="text-sm text-gray-400">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-gray-100" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-gray-400">Or continue with phone</span>
+                        </div>
+                    </div>
+
+                    <PhoneAuthForm />
+                </div>
+
+                <div className="mt-8 text-sm text-gray-400">
                     No account? <Link href="/signup" className="text-blue-500 hover:underline">Sign up</Link>
-                </p>
+                </div>
             </div>
         </div>
     );

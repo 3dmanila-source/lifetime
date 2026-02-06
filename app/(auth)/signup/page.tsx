@@ -1,31 +1,11 @@
 "use client";
 
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton"
+import { PhoneAuthForm } from "@/components/auth/PhoneAuthForm"
 
 export default function SignupPage() {
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
-
-    async function onSubmit(event: React.FormEvent) {
-        event.preventDefault()
-        setIsLoading(true)
-
-        // TODO: Handle authentication logic here
-
-        setTimeout(() => {
-            setIsLoading(false)
-            // Navigate to next step
-            router.push("/setup/life");
-        }, 1000)
-    }
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5F5F7] p-4 text-[#1D1D1F]">
 
@@ -37,43 +17,24 @@ export default function SignupPage() {
                     </Link>
                     <h1 className="text-3xl font-bold tracking-tight mb-2">Create your Life Bank</h1>
                     <p className="text-[#86868B]">
-                        Start by securing your account. You'll set your life expectancy next.
+                        Start your journey. No passwords to remember.
                     </p>
                 </div>
 
-                <form onSubmit={onSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="dob">Date of Birth</Label>
-                        <Input id="dob" type="date" required className="bg-gray-50/50" />
-                        <p className="text-xs text-[#86868B]">Used to calculate your remaining time. Encrypted.</p>
-                    </div>
+                <div className="space-y-6">
+                    <GoogleAuthButton text="Sign up with Google" />
 
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="you@example.com" required className="bg-gray-50/50" />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input id="password" type="password" required className="bg-gray-50/50" />
-                    </div>
-
-                    <div className="flex items-start space-x-3 pt-2">
-                        <Checkbox id="terms" required className="mt-1" />
-                        <div className="grid gap-1.5 leading-none">
-                            <Label htmlFor="terms" className="text-sm font-normal text-[#86868B] cursor-pointer">
-                                I accept the <Link href="/terms" className="underline hover:text-[#1D1D1F]">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-[#1D1D1F]">Privacy Policy</Link>.
-                            </Label>
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-gray-100" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-gray-400">Or continue with phone</span>
                         </div>
                     </div>
 
-                    <Button className="w-full h-12 text-base bg-[#0071e3] hover:bg-[#0077ED] shadow-sm text-white" disabled={isLoading}>
-                        {isLoading && (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        )}
-                        Continue to Life Expectancy
-                    </Button>
-                </form>
+                    <PhoneAuthForm />
+                </div>
 
                 <div className="mt-8 text-center text-sm">
                     <span className="text-[#86868B]">Already have an account? </span>
@@ -84,7 +45,7 @@ export default function SignupPage() {
             </div>
 
             <p className="mt-8 text-xs text-[#86868B] max-w-sm text-center">
-                Your data is encrypted and never sold. We prioritize your privacy above all.
+                By clicking continue, you agree to our Terms of Service and Privacy Policy.
             </p>
         </div>
     )
