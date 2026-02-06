@@ -60,6 +60,7 @@ export async function signOut() {
 export async function signupWithEmail(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
+    const dob = formData.get('dob') as string
     const supabase = await createClient()
 
     const { error } = await supabase.auth.signUp({
@@ -67,6 +68,9 @@ export async function signupWithEmail(formData: FormData) {
         password,
         options: {
             emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
+            data: {
+                dob: dob, // Save DOB to user metadata
+            }
         },
     })
 

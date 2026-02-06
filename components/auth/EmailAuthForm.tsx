@@ -46,9 +46,9 @@ export default function EmailAuthForm({ mode }: EmailAuthFormProps) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
-            <div className="space-y-2">
+            <div className="space-y-4">
                 <div className="relative">
-                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                     <Input
                         name="email"
                         type="email"
@@ -58,7 +58,7 @@ export default function EmailAuthForm({ mode }: EmailAuthFormProps) {
                     />
                 </div>
                 <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                     <Input
                         name="password"
                         type="password"
@@ -68,6 +68,18 @@ export default function EmailAuthForm({ mode }: EmailAuthFormProps) {
                         minLength={6}
                     />
                 </div>
+
+                {mode === 'signup' && (
+                    <div className="space-y-1">
+                        <label className="text-xs text-gray-500 ml-1">Date of Birth</label>
+                        <Input
+                            name="dob"
+                            type="date"
+                            className="h-12 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                            required
+                        />
+                    </div>
+                )}
             </div>
 
             {error && (
