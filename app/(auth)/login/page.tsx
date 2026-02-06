@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton"
 import { PhoneAuthForm } from "@/components/auth/PhoneAuthForm"
+import EmailAuthForm from "@/components/auth/EmailAuthForm"
 
 export default function LoginPage() {
     return (
@@ -24,6 +25,17 @@ export default function LoginPage() {
                     </div>
 
                     <PhoneAuthForm />
+
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-gray-100" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-gray-400">Or with email</span>
+                        </div>
+                    </div>
+
+                    <EmailAuthForm mode="login" />
                 </div>
 
                 <div className="mt-8 text-sm text-gray-400">
