@@ -40,8 +40,10 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
     // Data State
     const [dob, setDob] = useState('')
 
-    // Country Context from Signup
-    const countryCode = user.user_metadata?.country
+    // Country Context (Handle Fallback for Google Auth)
+    const [countryCode, setCountryCode] = useState(user.user_metadata?.country || '')
+    const [fullName, setFullName] = useState(user.user_metadata?.full_name || '')
+
     const countryData = COUNTRIES.find(c => c.code === countryCode)
     const countryName = countryData?.name || "Global Average"
     const defaultExpectancy = countryData ? Math.round(countryData.lifeExpectancy) : 80
@@ -49,6 +51,19 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
     const [lifeExpectancy, setLifeExpectancy] = useState(defaultExpectancy)
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
     const [lifeGoal, setLifeGoal] = useState('')
+
+    // Effect to update expectancy if country changes (fallback mode)
+    useEffect(() => {
+        if (countryData) {
+            setLifeExpectancy(Math.round(countryData.lifeExpectancy))
+        }
+    }, [countryCode])
+
+    const handleCountryChange = (code: string) => {
+        setCountryCode(code)
+    }
+
+
 
 
     // Computed Stats
@@ -70,33 +85,49 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
     }, [lifeExpectancy])
 
     const handleContinue = async () => {
-        if (step === 'dob' && dob) {
+        if (step === 'dob') {
+            if (!dob || !fullName) return // Block if name/dob missing
+
+            // Simulate calculation
+            setIsLoading(true)
+            await new Promise(resolve => setTimeout(resolve, 800))
+
+            // Calculate weeks
+            const birthDate = new Date(dob)
+            const now = new Date()
+            const diffTime = Math.abs(now.getTime() - birthDate.getTime())
+            const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7))
+
+            setWeeksLived(diffWeeks)
+            setTotalWeeks(lifeExpectancy * 52)
+
+            setIsLoading(false)
             setStep('life-span')
         } else if (step === 'life-span') {
+            if (!countryCode) return // Block if country missing
             setStep('interests')
         } else if (step === 'interests') {
-            await handleSubmit()
+            await handleFinalSubmit()
         }
     }
 
-    const handleSubmit = async () => {
+    // (Old handleDobSubmit/handleLifeSpanSubmit removed/merged into handleContinue)
+
+    const handleFinalSubmit = async () => {
         setIsLoading(true)
         try {
-            const result = await saveOnboardingData({
+            const { saveOnboardingData } = await import('@/app/setup/actions')
+            await saveOnboardingData({
                 dob,
                 lifeExpectancy,
                 interests: selectedInterests,
-                lifeGoal
+                lifeGoal,
+                full_name: fullName !== user.user_metadata?.full_name ? fullName : undefined,
+                country: countryCode !== user.user_metadata?.country ? countryCode : undefined
             })
-
-            if (result.success) {
-                router.push('/dashboard')
-            } else {
-                alert('Something went wrong. Please try again.')
-            }
+            router.push('/dashboard') // Direct to dashboard per requirement
         } catch (error) {
-            console.error('Failed to save data:', error)
-        } finally {
+            console.error('Failed to save:', error)
             setIsLoading(false)
         }
     }
@@ -121,9 +152,25 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
                         transition={{ duration: 0.5 }}
                         className="text-center"
                     >
-                        <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
+                        <h2 className="text-3xl font-semibold tracking-tight mb-2">
+                            Hello, {fullName || "Traveler"}
+                        </h2>
+                        {!user.user_metadata?.full_name && (
+                            <div className="max-w-xs mx-auto mb-8">
+                                <Label className="block text-left mb-2 text-sm text-[#86868B]">What should we call you?</Label>
+                                <input
+                                    type="text"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    placeholder="Enter your full name"
+                                    className="w-full h-12 px-4 bg-[#F5F5F7] rounded-xl outline-none focus:ring-2 focus:ring-black/5 transition-all text-center text-lg"
+                                />
+                            </div>
+                        )}
+
+                        <h2 className="text-3xl font-semibold tracking-tight mb-2">
                             When did your journey begin?
-                        </h1>
+                        </h2>
                         <p className="text-xl text-[#86868B] mb-12 font-medium">
                             To understand where you're going, we need to know where you started.
                         </p>
@@ -161,20 +208,44 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
                         </h2>
 
                         <div className="max-w-xs mx-auto mb-8">
-                            <div className="p-4 bg-[#F5F5F7] rounded-xl text-left border border-gray-100">
-                                <Label className="block mb-1 text-xs text-[#86868B] uppercase tracking-wide font-semibold">Location</Label>
-                                <div className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                                    {countryData?.code && (
-                                        <span className="text-2xl">
-                                            {countryData.code.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))}
-                                        </span>
-                                    )}
-                                    {countryName}
+                            {!user.user_metadata?.country ? (
+                                <>
+                                    <Label className="block text-left mb-2 text-sm text-[#86868B]">Where do you live?</Label>
+                                    <SelectComponent
+                                        onValueChange={(val) => handleCountryChange(val)}
+                                        defaultValue={countryCode}
+                                    >
+                                        <SelectTrigger className="w-full bg-[#F5F5F7] border-0 h-12 rounded-xl">
+                                            <SelectValue placeholder="Select your country" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {COUNTRIES.map(c => (
+                                                <SelectItem key={c.code} value={c.code}>
+                                                    {c.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </SelectComponent>
+                                </>
+                            ) : (
+                                <div className="p-4 bg-[#F5F5F7] rounded-xl text-left border border-gray-100">
+                                    <Label className="block mb-1 text-xs text-[#86868B] uppercase tracking-wide font-semibold">Location</Label>
+                                    <div className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                        {countryData?.code && (
+                                            <span className="text-2xl">
+                                                {countryData.code.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))}
+                                            </span>
+                                        )}
+                                        {countryName}
+                                    </div>
                                 </div>
-                                <p className="text-xs text-[#86868B] mt-2">
-                                    Avg. Life Expectancy: <span className="text-black font-semibold">{Math.round(countryData?.lifeExpectancy || 80)} years</span>
+                            )}
+
+                            {countryCode && (
+                                <p className="text-xs text-[#86868B] mt-2 text-left px-1">
+                                    Avg. Expectancy: <span className="text-black font-semibold">{Math.round(countryData?.lifeExpectancy || 80)} years</span>
                                 </p>
-                            </div>
+                            )}
                         </div>
 
                         <h2 className="text-2xl font-semibold tracking-tight mb-2">

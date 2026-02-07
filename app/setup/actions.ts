@@ -8,20 +8,27 @@ interface OnboardingData {
     lifeExpectancy: number
     interests: string[]
     lifeGoal: string
+    full_name?: string
+    country?: string
 }
 
 export async function saveOnboardingData(data: OnboardingData) {
     const supabase = await createClient()
 
     try {
+        const updates: any = {
+            dob: data.dob,
+            life_expectancy: data.lifeExpectancy,
+            interests: data.interests,
+            life_goal: data.lifeGoal,
+            onboarding_completed: true
+        }
+
+        if (data.full_name) updates.full_name = data.full_name
+        if (data.country) updates.country = data.country
+
         const { error } = await supabase.auth.updateUser({
-            data: {
-                dob: data.dob,
-                life_expectancy: data.lifeExpectancy,
-                interests: data.interests,
-                life_goal: data.lifeGoal,
-                onboarding_completed: true
-            }
+            data: updates
         })
 
         if (error) {
