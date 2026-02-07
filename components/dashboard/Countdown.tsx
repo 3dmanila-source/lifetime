@@ -46,7 +46,7 @@ export const Countdown = ({ dob, expectancy }: CountdownProps) => {
 
     return (
         <div className="w-full bg-white rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-black/5 p-8 md:p-12 text-center">
-            <h2 className="text-sm font-semibold text-[#86868B] uppercase tracking-widest mb-8">Time Remaining</h2>
+            <h2 className="text-sm font-semibold text-[#86868B] uppercase tracking-widest mb-8">Balance Life Time</h2>
 
             <div className="grid grid-cols-2 md:flex md:justify-center items-end gap-x-4 gap-y-8 md:gap-12">
                 <TimeBlock value={timeLeft.years} label="Years" />
