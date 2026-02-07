@@ -30,7 +30,7 @@ export default function DashboardLayout({
                 <nav className="flex-1 space-y-1">
                     <DashboardLink href="/dashboard" icon={<LayoutDashboard size={20} />} label="Life Bank" />
                     <DashboardLink href="/dashboard/relationships" icon={<Heart size={20} />} label="Relationships" />
-                    <DashboardLink href="/dashboard/coach" icon={<Brain size={20} />} label="AI Coach" />
+
                     <DashboardLink href="/dashboard/journal" icon={<BookOpen size={20} />} label="Journal" />
                 </nav>
 
