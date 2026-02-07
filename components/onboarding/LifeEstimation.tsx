@@ -7,7 +7,16 @@ import { saveOnboardingData } from '@/app/setup/actions'
 import { DateWheelPicker } from '@/components/ui/date-wheel-picker'
 import { Loader2, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import * as Slider from '@radix-ui/react-slider'
+import {
+    Select as SelectComponent,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { COUNTRIES } from '@/lib/constants/countries'
 
 const INTERESTS = [
     "Health & Fitness", "Business", "Philosophy", "Relationships",
@@ -22,9 +31,18 @@ export default function LifeEstimation() {
 
     // Data State
     const [dob, setDob] = useState('')
+    const [country, setCountry] = useState('')
     const [lifeExpectancy, setLifeExpectancy] = useState(80)
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
     const [lifeGoal, setLifeGoal] = useState('')
+
+    const handleCountryChange = (code: string) => {
+        setCountry(code)
+        const countryData = COUNTRIES.find(c => c.code === code)
+        if (countryData) {
+            setLifeExpectancy(Math.round(countryData.lifeExpectancy))
+        }
+    }
 
     // Computed Stats
     const [weeksLived, setWeeksLived] = useState(0)
@@ -132,7 +150,34 @@ export default function LifeEstimation() {
                         className="text-center w-full"
                     >
                         <h2 className="text-3xl font-semibold tracking-tight mb-4">
-                            Your Life in Weeks
+                            Your Life Context
+                        </h2>
+
+                        <div className="max-w-xs mx-auto mb-8">
+                            <Label className="block text-left mb-2 text-sm text-[#86868B]">Where do you live?</Label>
+                            <SelectComponent
+                                onValueChange={(val) => handleCountryChange(val)}
+                            >
+                                <SelectTrigger className="w-full bg-[#F5F5F7] border-0 h-12 rounded-xl">
+                                    <SelectValue placeholder="Select your country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {COUNTRIES.map(c => (
+                                        <SelectItem key={c.code} value={c.code}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </SelectComponent>
+                            {country && (
+                                <p className="text-xs text-[#86868B] mt-2 text-left">
+                                    Average life expectancy in {COUNTRIES.find(c => c.code === country)?.name} is <span className="text-black font-semibold">{Math.round(COUNTRIES.find(c => c.code === country)?.lifeExpectancy || 80)} years</span>.
+                                </p>
+                            )}
+                        </div>
+
+                        <h2 className="text-2xl font-semibold tracking-tight mb-2">
+                            Your Time
                         </h2>
                         <p className="text-[#86868B] mb-8 text-lg">
                             You have lived <span className="text-black font-semibold">{weeksLived.toLocaleString()}</span> weeks.
@@ -166,7 +211,7 @@ export default function LifeEstimation() {
                                 className="relative flex items-center select-none touch-none w-full h-5"
                                 value={[lifeExpectancy]}
                                 max={120}
-                                min={60}
+                                min={50}
                                 step={1}
                                 onValueChange={(val) => setLifeExpectancy(val[0])}
                             >
