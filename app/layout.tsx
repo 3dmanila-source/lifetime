@@ -5,9 +5,22 @@ import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#F5F5F7',
+}
+
 export const metadata: Metadata = {
   title: "Lifetime | Mortality-Aware Operating System",
   description: "Stop drifting. Start living.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Lifetime",
+  },
 };
 
 export default function RootLayout({

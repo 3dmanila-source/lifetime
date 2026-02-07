@@ -10,6 +10,10 @@ import {
     LogOut
 } from "lucide-react";
 
+import MobileNav from "@/components/layout/MobileNav";
+
+// ... existing imports
+
 export default function DashboardLayout({
     children,
 }: {
@@ -25,7 +29,7 @@ export default function DashboardLayout({
                 </div>
 
                 <nav className="flex-1 space-y-1">
-                    <DashboardLink href="/dashboard" icon={<LayoutDashboard size={20} />} label="Life Bank" active />
+                    <DashboardLink href="/dashboard" icon={<LayoutDashboard size={20} />} label="Life Bank" />
                     <DashboardLink href="/dashboard/relationships" icon={<Heart size={20} />} label="Relationships" />
                     <DashboardLink href="/dashboard/coach" icon={<Brain size={20} />} label="AI Coach" />
                     <DashboardLink href="/dashboard/journal" icon={<BookOpen size={20} />} label="Journal" />
@@ -40,8 +44,13 @@ export default function DashboardLayout({
                 </div>
             </aside>
 
+            {/* Mobile Navigation */}
+            <div className="md:hidden">
+                <MobileNav />
+            </div>
+
             {/* Main Content Area */}
-            <main className="flex-1 md:ml-64 p-4 md:p-8 overflow-y-auto">
+            <main className="flex-1 md:ml-64 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
                 {children}
             </main>
         </div>
