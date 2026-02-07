@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { saveOnboardingData } from '@/app/setup/actions'
+import { DateWheelPicker } from '@/components/ui/date-wheel-picker'
 import { Loader2, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import * as Slider from '@radix-ui/react-slider'
@@ -101,12 +102,21 @@ export default function LifeEstimation() {
                         <p className="text-xl text-[#86868B] mb-12 font-medium">
                             To understand where you're going, we need to know where you started.
                         </p>
-                        <div className="relative max-w-sm mx-auto mb-16 group">
-                            <input
-                                type="date"
-                                value={dob}
-                                onChange={(e) => setDob(e.target.value)}
-                                className="w-full text-center text-3xl p-6 bg-[#F5F5F7] rounded-3xl border-2 border-transparent focus:border-[#0071e3] focus:bg-white transition-all outline-none font-medium cursor-pointer"
+                        <div className="flex justify-center mb-16">
+                            <DateWheelPicker
+                                value={dob ? (() => {
+                                    const [y, m, d] = dob.split('-').map(Number);
+                                    return new Date(y, m - 1, d);
+                                })() : new Date(1995, 5, 15)}
+                                onChange={(date) => {
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    setDob(`${year}-${month}-${day}`);
+                                }}
+                                minYear={1940}
+                                maxYear={new Date().getFullYear()}
+                                size="lg"
                             />
                         </div>
                     </motion.div>
@@ -194,8 +204,8 @@ export default function LifeEstimation() {
                                     key={interest}
                                     onClick={() => toggleInterest(interest)}
                                     className={`p-3 rounded-xl text-sm font-medium transition-all border ${selectedInterests.includes(interest)
-                                            ? 'bg-black text-white border-black shadow-lg transform scale-[1.02]'
-                                            : 'bg-white text-[#1D1D1F] border-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                                        ? 'bg-black text-white border-black shadow-lg transform scale-[1.02]'
+                                        : 'bg-white text-[#1D1D1F] border-gray-100 hover:border-gray-300 hover:bg-gray-50'
                                         }`}
                                 >
                                     {interest}
@@ -230,8 +240,8 @@ export default function LifeEstimation() {
                         <div
                             key={s}
                             className={`h-1.5 rounded-full transition-all duration-500 ${['dob', 'life-span', 'interests'].indexOf(step) >= i
-                                    ? 'w-8 bg-black'
-                                    : 'w-2 bg-gray-200'
+                                ? 'w-8 bg-black'
+                                : 'w-2 bg-gray-200'
                                 }`}
                         />
                     ))}
