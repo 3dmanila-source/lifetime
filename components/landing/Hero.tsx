@@ -26,7 +26,7 @@ export const Hero = () => {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                         </span>
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Mortality Awareness</span>
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">CLARITY</span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1D1D1F] leading-[1.1]">
