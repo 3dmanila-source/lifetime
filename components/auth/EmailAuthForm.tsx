@@ -80,6 +80,18 @@ export default function EmailAuthForm({ mode }: EmailAuthFormProps) {
 
                 {mode === 'signup' && (
                     <div className="relative">
+                        <Input
+                            name="phone"
+                            type="tel"
+                            placeholder="Phone Number"
+                            className="h-12 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                            required
+                        />
+                    </div>
+                )}
+
+                {mode === 'signup' && (
+                    <div className="relative">
                         <select
                             name="country"
                             required

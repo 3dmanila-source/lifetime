@@ -61,6 +61,8 @@ export async function signupWithEmail(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const fullName = formData.get('full_name') as string
+    const country = formData.get('country') as string
+    const phone = formData.get('phone') as string
 
     // DOB handling moved to /setup/life
     const supabase = await createClient()
@@ -72,6 +74,8 @@ export async function signupWithEmail(formData: FormData) {
             emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback?next=/setup/life`,
             data: {
                 full_name: fullName,
+                country: country,
+                phone: phone,
             }
         },
     })

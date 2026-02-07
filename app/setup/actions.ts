@@ -10,6 +10,7 @@ interface OnboardingData {
     lifeGoal: string
     full_name?: string
     country?: string
+    phone?: string
 }
 
 export async function saveOnboardingData(data: OnboardingData) {
@@ -26,6 +27,7 @@ export async function saveOnboardingData(data: OnboardingData) {
 
         if (data.full_name) updates.full_name = data.full_name
         if (data.country) updates.country = data.country
+        if (data.phone) updates.phone = data.phone
 
         const { error } = await supabase.auth.updateUser({
             data: updates

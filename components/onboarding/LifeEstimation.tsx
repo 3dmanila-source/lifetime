@@ -26,8 +26,6 @@ const INTERESTS = [
 
 import { User } from '@supabase/supabase-js'
 
-// ... imports
-
 interface LifeEstimationProps {
     user: User
 }
@@ -43,6 +41,7 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
     // Country Context (Handle Fallback for Google Auth)
     const [countryCode, setCountryCode] = useState(user.user_metadata?.country || '')
     const [fullName, setFullName] = useState(user.user_metadata?.full_name || '')
+    const [phone, setPhone] = useState(user.user_metadata?.phone || '')
 
     const countryData = COUNTRIES.find(c => c.code === countryCode)
     const countryName = countryData?.name || "Global Average"
@@ -51,19 +50,6 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
     const [lifeExpectancy, setLifeExpectancy] = useState(defaultExpectancy)
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
     const [lifeGoal, setLifeGoal] = useState('')
-
-    // Effect to update expectancy if country changes (fallback mode)
-    useEffect(() => {
-        if (countryData) {
-            setLifeExpectancy(Math.round(countryData.lifeExpectancy))
-        }
-    }, [countryCode])
-
-    const handleCountryChange = (code: string) => {
-        setCountryCode(code)
-    }
-
-
 
 
     // Computed Stats
@@ -84,9 +70,20 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
         setTotalWeeks(lifeExpectancy * 52)
     }, [lifeExpectancy])
 
+    // Effect to update expectancy if country changes (fallback mode)
+    useEffect(() => {
+        if (countryData) {
+            setLifeExpectancy(Math.round(countryData.lifeExpectancy))
+        }
+    }, [countryCode])
+
+    const handleCountryChange = (code: string) => {
+        setCountryCode(code)
+    }
+
     const handleContinue = async () => {
         if (step === 'dob') {
-            if (!dob || !fullName) return // Block if name/dob missing
+            if (!dob || !fullName || !phone) return // Block if name/dob/phone missing
 
             // Simulate calculation
             setIsLoading(true)
@@ -111,8 +108,6 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
         }
     }
 
-    // (Old handleDobSubmit/handleLifeSpanSubmit removed/merged into handleContinue)
-
     const handleFinalSubmit = async () => {
         setIsLoading(true)
         try {
@@ -123,7 +118,8 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
                 interests: selectedInterests,
                 lifeGoal,
                 full_name: fullName !== user.user_metadata?.full_name ? fullName : undefined,
-                country: countryCode !== user.user_metadata?.country ? countryCode : undefined
+                country: countryCode !== user.user_metadata?.country ? countryCode : undefined,
+                phone: phone !== user.user_metadata?.phone ? phone : undefined
             })
             router.push('/dashboard') // Direct to dashboard per requirement
         } catch (error) {
@@ -156,13 +152,26 @@ export default function LifeEstimation({ user }: LifeEstimationProps) {
                             Hello, {fullName || "Traveler"}
                         </h2>
                         {!user.user_metadata?.full_name && (
-                            <div className="max-w-xs mx-auto mb-8">
+                            <div className="max-w-xs mx-auto mb-4">
                                 <Label className="block text-left mb-2 text-sm text-[#86868B]">What should we call you?</Label>
                                 <input
                                     type="text"
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     placeholder="Enter your full name"
+                                    className="w-full h-12 px-4 bg-[#F5F5F7] rounded-xl outline-none focus:ring-2 focus:ring-black/5 transition-all text-center text-lg"
+                                />
+                            </div>
+                        )}
+
+                        {!user.user_metadata?.phone && (
+                            <div className="max-w-xs mx-auto mb-8">
+                                <Label className="block text-left mb-2 text-sm text-[#86868B]">Your Phone Number?</Label>
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="+1 234 567 8900"
                                     className="w-full h-12 px-4 bg-[#F5F5F7] rounded-xl outline-none focus:ring-2 focus:ring-black/5 transition-all text-center text-lg"
                                 />
                             </div>
