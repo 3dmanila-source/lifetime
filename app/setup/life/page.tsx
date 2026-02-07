@@ -15,5 +15,5 @@ export default async function SetupLifePage() {
         redirect('/dashboard')
     }
 
-    return <LifeEstimation />
+    return <LifeEstimation user={user} />
 }

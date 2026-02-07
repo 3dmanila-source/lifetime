@@ -24,25 +24,32 @@ const INTERESTS = [
     "Art & Creativity", "Technology", "Spirituality", "Leadership"
 ]
 
-export default function LifeEstimation() {
+import { User } from '@supabase/supabase-js'
+
+// ... imports
+
+interface LifeEstimationProps {
+    user: User
+}
+
+export default function LifeEstimation({ user }: LifeEstimationProps) {
     const router = useRouter()
     const [step, setStep] = useState<'dob' | 'life-span' | 'interests'>('dob')
     const [isLoading, setIsLoading] = useState(false)
 
     // Data State
     const [dob, setDob] = useState('')
-    const [country, setCountry] = useState('')
-    const [lifeExpectancy, setLifeExpectancy] = useState(80)
+
+    // Country Context from Signup
+    const countryCode = user.user_metadata?.country
+    const countryData = COUNTRIES.find(c => c.code === countryCode)
+    const countryName = countryData?.name || "Global Average"
+    const defaultExpectancy = countryData ? Math.round(countryData.lifeExpectancy) : 80
+
+    const [lifeExpectancy, setLifeExpectancy] = useState(defaultExpectancy)
     const [selectedInterests, setSelectedInterests] = useState<string[]>([])
     const [lifeGoal, setLifeGoal] = useState('')
 
-    const handleCountryChange = (code: string) => {
-        setCountry(code)
-        const countryData = COUNTRIES.find(c => c.code === code)
-        if (countryData) {
-            setLifeExpectancy(Math.round(countryData.lifeExpectancy))
-        }
-    }
 
     // Computed Stats
     const [weeksLived, setWeeksLived] = useState(0)
@@ -154,26 +161,20 @@ export default function LifeEstimation() {
                         </h2>
 
                         <div className="max-w-xs mx-auto mb-8">
-                            <Label className="block text-left mb-2 text-sm text-[#86868B]">Where do you live?</Label>
-                            <SelectComponent
-                                onValueChange={(val) => handleCountryChange(val)}
-                            >
-                                <SelectTrigger className="w-full bg-[#F5F5F7] border-0 h-12 rounded-xl">
-                                    <SelectValue placeholder="Select your country" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {COUNTRIES.map(c => (
-                                        <SelectItem key={c.code} value={c.code}>
-                                            {c.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </SelectComponent>
-                            {country && (
-                                <p className="text-xs text-[#86868B] mt-2 text-left">
-                                    Average life expectancy in {COUNTRIES.find(c => c.code === country)?.name} is <span className="text-black font-semibold">{Math.round(COUNTRIES.find(c => c.code === country)?.lifeExpectancy || 80)} years</span>.
+                            <div className="p-4 bg-[#F5F5F7] rounded-xl text-left border border-gray-100">
+                                <Label className="block mb-1 text-xs text-[#86868B] uppercase tracking-wide font-semibold">Location</Label>
+                                <div className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                    {countryData?.code && (
+                                        <span className="text-2xl">
+                                            {countryData.code.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397))}
+                                        </span>
+                                    )}
+                                    {countryName}
+                                </div>
+                                <p className="text-xs text-[#86868B] mt-2">
+                                    Avg. Life Expectancy: <span className="text-black font-semibold">{Math.round(countryData?.lifeExpectancy || 80)} years</span>
                                 </p>
-                            )}
+                            </div>
                         </div>
 
                         <h2 className="text-2xl font-semibold tracking-tight mb-2">
