@@ -3,12 +3,25 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function saveDob(dob: string) {
+interface OnboardingData {
+    dob: string
+    lifeExpectancy: number
+    interests: string[]
+    lifeGoal: string
+}
+
+export async function saveOnboardingData(data: OnboardingData) {
     const supabase = await createClient()
 
     try {
         const { error } = await supabase.auth.updateUser({
-            data: { dob }
+            data: {
+                dob: data.dob,
+                life_expectancy: data.lifeExpectancy,
+                interests: data.interests,
+                life_goal: data.lifeGoal,
+                onboarding_completed: true
+            }
         })
 
         if (error) {
@@ -19,6 +32,6 @@ export async function saveDob(dob: string) {
         revalidatePath('/', 'layout')
         return { success: true }
     } catch (e) {
-        return { error: 'Failed to save date of birth' }
+        return { error: 'Failed to save onboarding data' }
     }
 }

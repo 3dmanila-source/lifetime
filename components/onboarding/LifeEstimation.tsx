@@ -3,21 +3,32 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { saveDob } from '@/app/setup/actions'
+import { saveOnboardingData } from '@/app/setup/actions'
 import { Loader2, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import * as Slider from '@radix-ui/react-slider'
+
+const INTERESTS = [
+    "Health & Fitness", "Business", "Philosophy", "Relationships",
+    "Career Growth", "Mindfulness", "Finance", "Travel",
+    "Art & Creativity", "Technology", "Spirituality", "Leadership"
+]
 
 export default function LifeEstimation() {
     const router = useRouter()
-    const [dob, setDob] = useState('')
+    const [step, setStep] = useState<'dob' | 'life-span' | 'interests'>('dob')
     const [isLoading, setIsLoading] = useState(false)
-    const [step, setStep] = useState<'input' | 'visualization'>('input')
 
-    // Life stats
+    // Data State
+    const [dob, setDob] = useState('')
+    const [lifeExpectancy, setLifeExpectancy] = useState(80)
+    const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+    const [lifeGoal, setLifeGoal] = useState('')
+
+    // Computed Stats
     const [weeksLived, setWeeksLived] = useState(0)
-    const [totalWeeks] = useState(4000) // Average life based on 80 years
+    const [totalWeeks, setTotalWeeks] = useState(4160) // 80 years * 52 weeks
 
-    // Calculate weeks lived when DOB changes
     useEffect(() => {
         if (dob) {
             const birthDate = new Date(dob)
@@ -28,27 +39,183 @@ export default function LifeEstimation() {
         }
     }, [dob])
 
+    useEffect(() => {
+        setTotalWeeks(lifeExpectancy * 52)
+    }, [lifeExpectancy])
+
     const handleContinue = async () => {
-        if (!dob) return
-
-        if (step === 'input') {
-            setStep('visualization')
-            return
+        if (step === 'dob' && dob) {
+            setStep('life-span')
+        } else if (step === 'life-span') {
+            setStep('interests')
+        } else if (step === 'interests') {
+            await handleSubmit()
         }
+    }
 
+    const handleSubmit = async () => {
         setIsLoading(true)
         try {
-            const result = await saveDob(dob)
+            const result = await saveOnboardingData({
+                dob,
+                lifeExpectancy,
+                interests: selectedInterests,
+                lifeGoal
+            })
+
             if (result.success) {
                 router.push('/dashboard')
             } else {
-                // simple alert for now, could be better error handling
                 alert('Something went wrong. Please try again.')
             }
         } catch (error) {
-            console.error('Failed to save DOB:', error)
+            console.error('Failed to save data:', error)
         } finally {
             setIsLoading(false)
+        }
+    }
+
+    const toggleInterest = (interest: string) => {
+        setSelectedInterests(prev =>
+            prev.includes(interest)
+                ? prev.filter(i => i !== interest)
+                : [...prev, interest]
+        )
+    }
+
+    const renderStep = () => {
+        switch (step) {
+            case 'dob':
+                return (
+                    <motion.div
+                        key="dob"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center"
+                    >
+                        <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
+                            When did your journey begin?
+                        </h1>
+                        <p className="text-xl text-[#86868B] mb-12 font-medium">
+                            To understand where you're going, we need to know where you started.
+                        </p>
+                        <div className="relative max-w-sm mx-auto mb-16 group">
+                            <input
+                                type="date"
+                                value={dob}
+                                onChange={(e) => setDob(e.target.value)}
+                                className="w-full text-center text-3xl p-6 bg-[#F5F5F7] rounded-3xl border-2 border-transparent focus:border-[#0071e3] focus:bg-white transition-all outline-none font-medium cursor-pointer"
+                            />
+                        </div>
+                    </motion.div>
+                )
+            case 'life-span':
+                return (
+                    <motion.div
+                        key="life-span"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center w-full"
+                    >
+                        <h2 className="text-3xl font-semibold tracking-tight mb-4">
+                            Your Life in Weeks
+                        </h2>
+                        <p className="text-[#86868B] mb-8 text-lg">
+                            You have lived <span className="text-black font-semibold">{weeksLived.toLocaleString()}</span> weeks.
+                        </p>
+
+                        <div className="flex justify-center mb-8">
+                            <div className="p-6 bg-[#F5F5F7] rounded-3xl relative w-full h-64 overflow-hidden flex items-center justify-center">
+                                <div className="absolute inset-0 flex items-end">
+                                    <motion.div
+                                        initial={{ height: "0%" }}
+                                        animate={{ height: `${Math.min((weeksLived / totalWeeks) * 100, 100)}%` }}
+                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                        className="w-full bg-gradient-to-t from-gray-900 to-gray-600 opacity-20"
+                                    />
+                                </div>
+                                <div className="z-10 text-center">
+                                    <h3 className="text-6xl font-bold mb-2">
+                                        {Math.round((weeksLived / totalWeeks) * 100)}%
+                                    </h3>
+                                    <span className="text-sm uppercase tracking-widest text-[#86868B]">Lived</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-12 px-4">
+                            <div className="flex justify-between text-sm font-medium mb-4 text-[#86868B]">
+                                <span>Optimistic Estimate</span>
+                                <span className="text-black">{lifeExpectancy} Years</span>
+                            </div>
+                            <Slider.Root
+                                className="relative flex items-center select-none touch-none w-full h-5"
+                                value={[lifeExpectancy]}
+                                max={120}
+                                min={60}
+                                step={1}
+                                onValueChange={(val) => setLifeExpectancy(val[0])}
+                            >
+                                <Slider.Track className="bg-[#E5E5E5] relative grow rounded-full h-[3px]">
+                                    <Slider.Range className="absolute bg-black rounded-full h-full" />
+                                </Slider.Track>
+                                <Slider.Thumb
+                                    className="block w-6 h-6 bg-white border-2 border-black/10 shadow-[0_2px_10px_rgba(0,0,0,0.1)] rounded-full hover:bg-gray-50 focus:outline-none focus:scale-110 transition-transform"
+                                    aria-label="Life Expectancy"
+                                />
+                            </Slider.Root>
+                        </div>
+                    </motion.div>
+                )
+            case 'interests':
+                return (
+                    <motion.div
+                        key="interests"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center w-full"
+                    >
+                        <h2 className="text-3xl font-semibold tracking-tight mb-2">
+                            What drives you?
+                        </h2>
+                        <p className="text-[#86868B] mb-8">
+                            Help your AI Coach understand your focus areas.
+                        </p>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+                            {INTERESTS.map(interest => (
+                                <button
+                                    key={interest}
+                                    onClick={() => toggleInterest(interest)}
+                                    className={`p-3 rounded-xl text-sm font-medium transition-all border ${selectedInterests.includes(interest)
+                                            ? 'bg-black text-white border-black shadow-lg transform scale-[1.02]'
+                                            : 'bg-white text-[#1D1D1F] border-gray-100 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {interest}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="mb-10 text-left">
+                            <label className="block text-xs uppercase tracking-wider font-semibold text-[#86868B] mb-3 ml-1">
+                                Main Life Goal (Optional)
+                            </label>
+                            <textarea
+                                value={lifeGoal}
+                                onChange={(e) => setLifeGoal(e.target.value)}
+                                placeholder="E.g. become financially independent, write a book..."
+                                className="w-full p-4 bg-[#F5F5F7] rounded-2xl border-2 border-transparent focus:border-[#0071e3] focus:bg-white transition-all outline-none resize-none h-24 text-[15px]"
+                            />
+                        </div>
+                    </motion.div>
+                )
         }
     }
 
@@ -56,95 +223,40 @@ export default function LifeEstimation() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#F5F5F7] p-6 text-[#1D1D1F]">
             <motion.div
                 layout
-                className="w-full max-w-2xl bg-white rounded-[2.5rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.06)] border border-white/60 relative overflow-hidden"
+                className="w-full max-w-xl bg-white rounded-[2.5rem] p-8 md:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.06)] border border-white/60 relative overflow-hidden"
             >
+                <div className="mb-8 flex justify-center gap-2">
+                    {['dob', 'life-span', 'interests'].map((s, i) => (
+                        <div
+                            key={s}
+                            className={`h-1.5 rounded-full transition-all duration-500 ${['dob', 'life-span', 'interests'].indexOf(step) >= i
+                                    ? 'w-8 bg-black'
+                                    : 'w-2 bg-gray-200'
+                                }`}
+                        />
+                    ))}
+                </div>
+
                 <AnimatePresence mode="wait">
-                    {step === 'input' ? (
-                        <motion.div
-                            key="input"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.5 }}
-                            className="text-center"
-                        >
-                            <h1 className="text-4xl md:text-5xl font-semibold tracking-tight mb-6">
-                                When did your journey begin?
-                            </h1>
-                            <p className="text-xl text-[#86868B] mb-12 font-medium">
-                                To understand where you're going, we need to know where you started.
-                            </p>
-
-                            <div className="relative max-w-sm mx-auto mb-16 group">
-                                <input
-                                    type="date"
-                                    value={dob}
-                                    onChange={(e) => setDob(e.target.value)}
-                                    className="w-full text-center text-3xl p-6 bg-[#F5F5F7] rounded-3xl border-2 border-transparent focus:border-[#0071e3] focus:bg-white transition-all outline-none font-medium cursor-pointer"
-                                />
-                            </div>
-
-                            <Button
-                                onClick={handleContinue}
-                                disabled={!dob}
-                                className="h-16 px-10 text-xl rounded-full bg-black hover:bg-gray-800 text-white transition-all transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                            >
-                                <span className="flex items-center gap-3">
-                                    Continue <ArrowRight className="w-5 h-5" />
-                                </span>
-                            </Button>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="visualization"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.5 }}
-                            className="text-center"
-                        >
-                            <h2 className="text-3xl font-semibold tracking-tight mb-4">
-                                Your Life in Weeks
-                            </h2>
-                            <p className="text-[#86868B] mb-8 text-lg">
-                                You have lived <span className="text-black font-semibold">{weeksLived.toLocaleString()}</span> weeks.
-                                Assuming an average of 4,000 weeks.
-                            </p>
-
-                            <div className="flex justify-center mb-12">
-                                <div className="p-6 bg-[#F5F5F7] rounded-3xl relative w-full h-64 overflow-hidden flex items-center justify-center">
-                                    {/* Abstract visualization */}
-                                    <div className="absolute inset-0 flex items-end">
-                                        <motion.div
-                                            initial={{ height: "0%" }}
-                                            animate={{ height: `${Math.min((weeksLived / totalWeeks) * 100, 100)}%` }}
-                                            transition={{ duration: 1.5, ease: "easeOut" }}
-                                            className="w-full bg-gradient-to-t from-gray-900 to-gray-600 opacity-20"
-                                        />
-                                    </div>
-                                    <h3 className="text-6xl font-bold z-10 sticky">
-                                        {Math.round((weeksLived / totalWeeks) * 100)}%
-                                    </h3>
-                                </div>
-                            </div>
-
-                            <p className="text-sm text-[#86868B] mb-10 max-w-md mx-auto">
-                                "We have two lives, and the second begins when we realize we only have one." — Confucius
-                            </p>
-
-                            <Button
-                                onClick={handleContinue}
-                                disabled={isLoading}
-                                className="h-16 px-12 text-xl rounded-full bg-black hover:bg-gray-800 text-white transition-all transform hover:scale-105 shadow-xl"
-                            >
-                                {isLoading ? (
-                                    <Loader2 className="w-6 h-6 animate-spin" />
-                                ) : (
-                                    "Enter Your Life Bank"
-                                )}
-                            </Button>
-                        </motion.div>
-                    )}
+                    {renderStep()}
                 </AnimatePresence>
+
+                <div className="mt-8 flex justify-center">
+                    <Button
+                        onClick={handleContinue}
+                        disabled={step === 'dob' && !dob || isLoading}
+                        className="h-14 px-10 text-lg rounded-full bg-black hover:bg-gray-800 text-white transition-all transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 shadow-xl"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                {step === 'interests' ? 'Enter Life Bank' : 'Continue'}
+                                <ArrowRight className="w-5 h-5" />
+                            </span>
+                        )}
+                    </Button>
+                </div>
             </motion.div>
         </div>
     )
