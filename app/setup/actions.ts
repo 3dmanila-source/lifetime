@@ -35,3 +35,29 @@ export async function saveOnboardingData(data: OnboardingData) {
         return { error: 'Failed to save onboarding data' }
     }
 }
+
+export async function resetOnboardingData() {
+    const supabase = await createClient()
+
+    try {
+        const { error } = await supabase.auth.updateUser({
+            data: {
+                dob: null,
+                life_expectancy: null,
+                interests: null,
+                life_goal: null,
+                onboarding_completed: null
+            }
+        })
+
+        if (error) {
+            console.error('Error resetting profile:', error)
+            return { error: error.message }
+        }
+
+        revalidatePath('/', 'layout')
+        return { success: true }
+    } catch (e) {
+        return { error: 'Failed to reset data' }
+    }
+}

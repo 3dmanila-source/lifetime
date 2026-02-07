@@ -28,8 +28,15 @@ export default function EmailAuthForm({ mode }: EmailAuthFormProps) {
                 const result = await signupWithEmail(formData)
                 if (result.error) {
                     setError(result.error)
-                } else if (result.success) {
-                    setSuccessMessage('Check your email to confirm your account!')
+                } else {
+                    // Force a redirect or show success message
+                    // In many Supabase setups, signup might auto-login in dev.
+                    // We'll show the message, but also try to redirect if we detect a session?
+                    // For now, let's just make the message very clear.
+                    setSuccessMessage('Account created! Please check your email to confirm.')
+
+                    // Optional: If you want to auto-redirect in dev environments where email confirmation is off:
+                    // window.location.href = '/setup/life' 
                 }
             } else {
                 const result = await loginWithEmail(formData)
