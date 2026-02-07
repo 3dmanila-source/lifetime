@@ -69,17 +69,7 @@ export default function EmailAuthForm({ mode }: EmailAuthFormProps) {
                     />
                 </div>
 
-                {mode === 'signup' && (
-                    <div className="space-y-1">
-                        <label className="text-xs text-gray-500 ml-1">Date of Birth</label>
-                        <Input
-                            name="dob"
-                            type="date"
-                            className="h-12 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                            required
-                        />
-                    </div>
-                )}
+                {/* DOB field removed for onboarding flow */}
             </div>
 
             {error && (

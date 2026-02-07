@@ -9,7 +9,7 @@ export async function signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
+            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback?next=/setup/life`,
         },
     })
 
@@ -47,7 +47,7 @@ export async function verifyOtp(phone: string, token: string) {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/dashboard')
+    redirect('/setup/life')
 }
 
 export async function signOut() {
@@ -60,17 +60,14 @@ export async function signOut() {
 export async function signupWithEmail(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
-    const dob = formData.get('dob') as string
+    // DOB handling moved to /setup/life
     const supabase = await createClient()
 
     const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback`,
-            data: {
-                dob: dob, // Save DOB to user metadata
-            }
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/callback?next=/setup/life`,
         },
     })
 
@@ -96,5 +93,5 @@ export async function loginWithEmail(formData: FormData) {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/dashboard')
+    redirect('/setup/life')
 }
