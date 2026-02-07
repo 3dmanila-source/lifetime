@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { ArrowLeft, Save, Sparkles, Mic, MicOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { MoodSelector } from "@/components/journal/MoodSelector";
@@ -21,6 +22,15 @@ export default function NewEntryPage() {
 
     // Voice Input Hook
     const { isListening, transcript, startRecording, stopRecording, resetTranscript, error: voiceError } = useVoiceInput();
+
+    // Prompts logic
+    const prompts = [
+        "What are you grateful for today?",
+        "What is one thing you learned?",
+        "How did you make progress on your life goals?",
+        "What was the highlight of your day?"
+    ];
+    const [activePrompt, setActivePrompt] = useState(prompts[0]);
 
     // Sync transcript to content area
     useEffect(() => {
@@ -44,8 +54,14 @@ export default function NewEntryPage() {
         } catch (error) {
             console.error(error);
             alert("Failed to save entry. Please try again.");
+        } finally {
             setIsSaving(false);
         }
+    };
+
+    const shufflePrompt = () => {
+        const random = prompts[Math.floor(Math.random() * prompts.length)];
+        setActivePrompt(random);
     };
 
     const handleMicClick = () => {
@@ -89,7 +105,11 @@ export default function NewEntryPage() {
                         "{aiFeedback}"
                     </p>
                     <div className="mt-4 flex justify-end">
-                        <Button variant="outline" onClick={() => router.push('/dashboard/journal')} className="rounded-full border-indigo-200 text-indigo-700 bg-white hover:bg-indigo-50">
+                        <Button 
+                            variant="outline" 
+                            onClick={() => router.push('/dashboard/journal')} 
+                            className="rounded-full border-indigo-200 text-indigo-700 bg-white hover:bg-indigo-50"
+                        >
                             Done
                         </Button>
                     </div>
@@ -103,6 +123,28 @@ export default function NewEntryPage() {
                         <Label className="uppercase text-xs tracking-wide text-gray-400">How are you feeling?</Label>
                         <MoodSelector selectedMood={mood} onSelect={setMood} />
                     </section>
+
+                    {/* Prompt Card */}
+                    <div className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-100 to-blue-100 rounded-3xl opacity-50 blur group-hover:opacity-75 transition duration-500"></div>
+                        <div className="relative bg-white rounded-3xl p-8 border border-gray-100">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-sm font-semibold text-indigo-600 uppercase tracking-wide flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4" />
+                                    Reflection Prompt
+                                </h3>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={shufflePrompt} 
+                                    className="text-xs text-gray-400 hover:text-indigo-600"
+                                >
+                                    Shuffle
+                                </Button>
+                            </div>
+                            <p className="text-xl font-medium text-[#1D1D1F]">"{activePrompt}"</p>
+                        </div>
+                    </div>
 
                     {/* Voice & Writing Section */}
                     <section className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 min-h-[400px] relative">
