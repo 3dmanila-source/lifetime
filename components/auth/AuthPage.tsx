@@ -80,13 +80,31 @@ export default function AuthPage({ initialMode = 'login' }: AuthPageProps) {
                 </div>
 
                 <div className="mt-8 text-center text-[14px]">
-                    <span className="text-[#86868B]">{mode === 'login' ? "New here? " : "Already have an account? "}</span>
-                    <button
-                        onClick={toggleMode}
-                        className="font-medium text-[#0071e3] hover:text-[#0077ED] transition-colors focus:outline-none"
-                    >
-                        {mode === 'login' ? "Create an account" : "Sign in"}
-                    </button>
+                    <p className="text-center mt-6 text-[#86868B] text-sm">
+                        {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                        <button
+                            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                            className="text-[#0071e3] hover:underline font-medium outline-none"
+                        >
+                            {mode === 'login' ? 'Sign up' : 'Log in'}
+                        </button>
+                    </p>
+
+                    <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+                        <button
+                            onClick={async () => {
+                                if (confirm('Are you sure you want to reset all onboarding data?')) {
+                                    const { resetOnboardingData } = await import('@/app/setup/actions')
+                                    await resetOnboardingData()
+                                    alert('Data reset!')
+                                    window.location.reload()
+                                }
+                            }}
+                            className="text-xs text-red-400 hover:text-red-500 hover:underline"
+                        >
+                            Trouble connecting? Reset Data
+                        </button>
+                    </div>
                 </div>
             </motion.div>
         </div>
