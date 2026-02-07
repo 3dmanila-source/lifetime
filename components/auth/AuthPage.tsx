@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton'
 import { PhoneAuthForm } from '@/components/auth/PhoneAuthForm'
 import EmailAuthForm from '@/components/auth/EmailAuthForm'
+import { AuthToggle } from '@/components/auth/AuthToggle'
 
 interface AuthPageProps {
     initialMode?: 'login' | 'signup'
@@ -12,10 +13,6 @@ interface AuthPageProps {
 
 export default function AuthPage({ initialMode = 'login' }: AuthPageProps) {
     const [mode, setMode] = useState<'login' | 'signup'>(initialMode)
-
-    const toggleMode = () => {
-        setMode(prev => prev === 'login' ? 'signup' : 'login')
-    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#F5F5F7] p-4 text-[#1D1D1F]">
@@ -32,7 +29,9 @@ export default function AuthPage({ initialMode = 'login' }: AuthPageProps) {
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-[2.5rem] p-8 md:p-12 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.06)] border border-white/60 relative z-10"
             >
-                <div className="mb-8 text-center">
+                <div className="mb-6 text-center">
+                    <AuthToggle mode={mode} onToggle={setMode} />
+
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={mode === 'login' ? 'title-login' : 'title-signup'}
@@ -40,6 +39,7 @@ export default function AuthPage({ initialMode = 'login' }: AuthPageProps) {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.3 }}
+                            className="mt-6"
                         >
                             <h1 className="text-3xl font-semibold tracking-tight mb-2 text-[#1d1d1f]">
                                 {mode === 'login' ? 'Welcome Back' : 'Create your Life Bank'}
@@ -80,16 +80,6 @@ export default function AuthPage({ initialMode = 'login' }: AuthPageProps) {
                 </div>
 
                 <div className="mt-8 text-center text-[14px]">
-                    <p className="text-center mt-6 text-[#86868B] text-sm">
-                        {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
-                        <button
-                            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-                            className="text-[#0071e3] hover:underline font-medium outline-none"
-                        >
-                            {mode === 'login' ? 'Sign up' : 'Log in'}
-                        </button>
-                    </p>
-
                     <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
                         <button
                             onClick={async () => {
@@ -110,3 +100,4 @@ export default function AuthPage({ initialMode = 'login' }: AuthPageProps) {
         </div>
     )
 }
+

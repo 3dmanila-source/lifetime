@@ -2,7 +2,7 @@ import { google } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import { createClient } from '@/lib/supabase/server';
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
     const { messages } = await req.json();
@@ -68,6 +68,12 @@ export async function POST(req: Request) {
     5. Always ground advice in the reality that time is finite.
   `;
 
+    // Explicitly check for API Key
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        console.error("CRITICAL ERROR: GOOGLE_GENERATIVE_AI_API_KEY is missing from environment variables.");
+        return new Response("Configuration Error: API Key Missing. Please add GOOGLE_GENERATIVE_AI_API_KEY to Vercel Environment Variables.", { status: 500 });
+    }
+
     try {
         const result = streamText({
             model: google('gemini-1.5-flash'),
@@ -77,6 +83,6 @@ export async function POST(req: Request) {
         return result.toTextStreamResponse();
     } catch (error) {
         console.error("Gemini API Error:", error);
-        return new Response("I seem to be having trouble connecting to the ether. Please try again later.", { status: 500 });
+        return new Response(`AI Error: ${(error as any).message || 'Unknown error occurred'}`, { status: 500 });
     }
 }
